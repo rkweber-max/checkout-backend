@@ -1,0 +1,75 @@
+# =========================
+# Go Build / Cache
+# =========================
+bin/
+build/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Diretórios gerados pelo Go
+/vendor/
+/coverage/
+/cover.out
+
+# Módulos
+go.sum
+
+# =========================
+# ENV files
+# =========================
+.env
+.env.local
+.env.*.local
+*.env
+
+# =========================
+# Config / Keys
+# =========================
+config.yaml
+config.yml
+*.key
+*.pem
+*.crt
+
+# =========================
+# Docker
+# =========================
+/docker-data/
+/docker-compose.override.yml
+
+# =========================
+# IDE / Editors
+# =========================
+.vscode/
+.vscode/*
+.idea/
+*.swp
+*~
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+tmp/
+temp/
+
+# =========================
+# OS-specific
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Terraform (se estiver no mesmo repo)
+# =========================
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
