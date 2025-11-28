@@ -1,11 +1,11 @@
 package repository
 
-import {
+import (
 	"context"
 	"database/sql"
 
 	"github.com/rkweber-max/checkout-backend/internal/product"
-}
+)
 
 type ProductRepository interface {
 	Create(ctx context.Context, p product.Product) (int64, error)
