@@ -8,9 +8,12 @@ import (
 	"github.com/rkweber-max/checkout-backend/pkg/database"
 	"go.uber.org/fx"
 
-	"github.com/rkweber-max/checkout-backend/internal/product/handler"
-	"github.com/rkweber-max/checkout-backend/internal/product/repository"
-	"github.com/rkweber-max/checkout-backend/internal/product/service"
+	productHandler "github.com/rkweber-max/checkout-backend/internal/product/handler"
+	productRepo "github.com/rkweber-max/checkout-backend/internal/product/repository"
+	productService "github.com/rkweber-max/checkout-backend/internal/product/service"
+
+	checkoutHandler "github.com/rkweber-max/checkout-backend/internal/checkout/handler"
+	checkoutService "github.com/rkweber-max/checkout-backend/internal/checkout/service"
 )
 
 func main() {
@@ -19,9 +22,11 @@ func main() {
 			config.LoadConfig,
 			newGinEngine,
 			database.NewPostgresDB,
-			repository.NewProductRepository,
-			service.NewProductService,
-			handler.NewProductHandler,
+			productRepo.NewProductRepository,
+			productService.NewProductService,
+			productHandler.NewProductHandler,
+			checkoutService.NewCheckoutService,
+			checkoutHandler.NewCheckoutHandler,
 		),
 		fx.Invoke(registerRoutes),
 	).Run()
@@ -33,18 +38,20 @@ func newGinEngine() *gin.Engine {
 
 func registerRoutes(
 	router *gin.Engine,
-	h *handler.ProductHandler,
+	productHandler *productHandler.ProductHandler,
+	checkoutHandler *checkoutHandler.CheckoutHandler,
 	config *config.Config,
 ) {
 	router.Use(gin.Logger(), gin.Recovery())
 
 	r := router.Group("/api")
 	{
-		r.POST("/products", h.CreateProduct)
-		r.GET("/products", h.GetAllProducts)
-		r.GET("/products/:id", h.GetProductByID)
-		r.PUT("/products/:id", h.UpdateProduct)
-		r.DELETE("/products/:id", h.DeleteProduct)
+		r.POST("/products", productHandler.CreateProduct)
+		r.GET("/products", productHandler.GetAllProducts)
+		r.GET("/products/:id", productHandler.GetProductByID)
+		r.PUT("/products/:id", productHandler.UpdateProduct)
+		r.DELETE("/products/:id", productHandler.DeleteProduct)
+		r.POST("/checkout", checkoutHandler.Checkout)
 	}
 
 	log.Printf("🚀 Server running on port %s", config.AppPort)
