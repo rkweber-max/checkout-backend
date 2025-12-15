@@ -57,9 +57,9 @@ func registerRoutes(
 		r.POST("/users", userHandler.Create)
 		r.GET("/users", userHandler.List)
 		r.GET("/users/:id", userHandler.GetByID)
-		r.GET("/users/:email", userHandler.GetByEmail)
+		r.GET("/users/email/:email", userHandler.GetByEmail)
 		r.PUT("/users/:id", userHandler.Update)
-		r.PUT("/users/:id", userHandler.Delete)
+		r.DELETE("/users/:id", userHandler.Delete)
 
 		r.POST("/products", productHandler.CreateProduct)
 		r.GET("/products", productHandler.GetAllProducts)
