@@ -8,6 +8,10 @@ import (
 	"github.com/rkweber-max/checkout-backend/pkg/database"
 	"go.uber.org/fx"
 
+	userHandler "github.com/rkweber-max/checkout-backend/internal/user/handler"
+	userRepo "github.com/rkweber-max/checkout-backend/internal/user/repository"
+	userService "github.com/rkweber-max/checkout-backend/internal/user/service"
+
 	productHandler "github.com/rkweber-max/checkout-backend/internal/product/handler"
 	productRepo "github.com/rkweber-max/checkout-backend/internal/product/repository"
 	productService "github.com/rkweber-max/checkout-backend/internal/product/service"
@@ -22,6 +26,9 @@ func main() {
 			config.LoadConfig,
 			newGinEngine,
 			database.NewPostgresDB,
+			userHandler.NewUserHandler,
+			userRepo.NewUserRepository,
+			userService.NewUserService,
 			productRepo.NewProductRepository,
 			productService.NewProductService,
 			productHandler.NewProductHandler,
@@ -38,6 +45,7 @@ func newGinEngine() *gin.Engine {
 
 func registerRoutes(
 	router *gin.Engine,
+	userHandler *userHandler.UserHandler,
 	productHandler *productHandler.ProductHandler,
 	checkoutHandler *checkoutHandler.CheckoutHandler,
 	config *config.Config,
@@ -46,11 +54,19 @@ func registerRoutes(
 
 	r := router.Group("/api")
 	{
+		r.POST("/users", userHandler.Create)
+		r.GET("/users", userHandler.List)
+		r.GET("/users/:id", userHandler.GetByID)
+		r.GET("/users/:email", userHandler.GetByEmail)
+		r.PUT("/users/:id", userHandler.Update)
+		r.PUT("/users/:id", userHandler.Delete)
+
 		r.POST("/products", productHandler.CreateProduct)
 		r.GET("/products", productHandler.GetAllProducts)
 		r.GET("/products/:id", productHandler.GetProductByID)
 		r.PUT("/products/:id", productHandler.UpdateProduct)
 		r.DELETE("/products/:id", productHandler.DeleteProduct)
+
 		r.POST("/checkout", checkoutHandler.Checkout)
 	}
 
