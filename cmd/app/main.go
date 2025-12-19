@@ -4,6 +4,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	authHandler "github.com/rkweber-max/checkout-backend/internal/handler"
+	"github.com/rkweber-max/checkout-backend/internal/middleware"
 	"github.com/rkweber-max/checkout-backend/pkg/config"
 	"github.com/rkweber-max/checkout-backend/pkg/database"
 	"go.uber.org/fx"
@@ -26,6 +28,7 @@ func main() {
 			config.LoadConfig,
 			newGinEngine,
 			database.NewPostgresDB,
+			authHandler.NewAuthHandler,
 			userHandler.NewUserHandler,
 			userRepo.NewUserRepository,
 			userService.NewUserService,
@@ -45,6 +48,7 @@ func newGinEngine() *gin.Engine {
 
 func registerRoutes(
 	router *gin.Engine,
+	authHandler *authHandler.AuthHandler,
 	userHandler *userHandler.UserHandler,
 	productHandler *productHandler.ProductHandler,
 	checkoutHandler *checkoutHandler.CheckoutHandler,
@@ -52,22 +56,27 @@ func registerRoutes(
 ) {
 	router.Use(gin.Logger(), gin.Recovery())
 
-	r := router.Group("/api")
+	api := router.Group("/api")
 	{
-		r.POST("/users", userHandler.Create)
-		r.GET("/users", userHandler.List)
-		r.GET("/users/:id", userHandler.GetByID)
-		r.GET("/users/email/:email", userHandler.GetByEmail)
-		r.PUT("/users/:id", userHandler.Update)
-		r.DELETE("/users/:id", userHandler.Delete)
+		api.POST("/login", authHandler.Login)
+		api.POST("/users", userHandler.Create)
 
-		r.POST("/products", productHandler.CreateProduct)
-		r.GET("/products", productHandler.GetAllProducts)
-		r.GET("/products/:id", productHandler.GetProductByID)
-		r.PUT("/products/:id", productHandler.UpdateProduct)
-		r.DELETE("/products/:id", productHandler.DeleteProduct)
+		authenticated := api.Group("/")
+		authenticated.Use(middleware.JWTAuthMiddleware(config))
 
-		r.POST("/checkout", checkoutHandler.Checkout)
+		authenticated.GET("/users", userHandler.List)
+		authenticated.GET("/users/:id", userHandler.GetByID)
+		authenticated.GET("/users/email/:email", userHandler.GetByEmail)
+		authenticated.PUT("/users/:id", userHandler.Update)
+		authenticated.DELETE("/users/:id", userHandler.Delete)
+
+		authenticated.POST("/products", productHandler.CreateProduct)
+		authenticated.GET("/products", productHandler.GetAllProducts)
+		authenticated.GET("/products/:id", productHandler.GetProductByID)
+		authenticated.PUT("/products/:id", productHandler.UpdateProduct)
+		authenticated.DELETE("/products/:id", productHandler.DeleteProduct)
+
+		authenticated.POST("/checkout", checkoutHandler.Checkout)
 	}
 
 	log.Printf("🚀 Server running on port %s", config.AppPort)

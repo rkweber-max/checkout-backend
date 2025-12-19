@@ -17,17 +17,29 @@ func NewUserHandler(service service.UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
-func (h *UserHandler) Create(c *gin.Context) {
-	var user domain.User
+type CreateUserRequest struct {
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
 
-	if err := c.ShouldBindJSON(&user); err != nil {
+func (h *UserHandler) Create(c *gin.Context) {
+	var req CreateUserRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	err := h.service.Create(&user)
+	user := &domain.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	err := h.service.Create(user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

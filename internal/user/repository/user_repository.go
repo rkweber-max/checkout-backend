@@ -63,5 +63,5 @@ func (r *userRepository) Update(user *domain.User) error {
 }
 
 func (r *userRepository) Delete(id uint) error {
-	return r.db.Delete(&domain.User{}, id).Error
+	return r.db.Unscoped().Delete(&domain.User{}, id).Error
 }

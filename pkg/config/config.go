@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	AppPort string `mapstructure:"APP_PORT"`
+	AppPort   string `mapstructure:"APP_PORT"`
+	JWTSecret string `mapstructure:"JWT_SECRET"`
 
 	DBHost     string `mapstructure:"DB_HOST"`
 	DBPort     string `mapstructure:"DB_PORT"`
