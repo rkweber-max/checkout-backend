@@ -5,17 +5,19 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/rkweber-max/checkout-backend/internal/user/domain"
 )
 
-func GenerateToken(userID uint, secret string) (string, error) {
+func GenerateToken(userID uint, secret string, role domain.Role) (string, error) {
 	if secret == "" {
 		return "", fmt.Errorf("JWT secret cannot be empty")
 	}
 
 	claims := jwt.MapClaims{
-		"sub": userID,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-		"iat": time.Now().Unix(),
+		"sub":  userID,
+		"exp":  time.Now().Add(time.Hour * 24).Unix(),
+		"iat":  time.Now().Unix(),
+		"role": role,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

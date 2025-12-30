@@ -14,4 +14,13 @@ type User struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
+	Role      Role           `json:"role" gorm:"type:varchar(50);not null;default:'customer'"`
 }
+
+type Role string
+
+const (
+	RoleAdmin    Role = "admin"
+	RoleEmployee Role = "employee"
+	RoleCustomer Role = "customer"
+)

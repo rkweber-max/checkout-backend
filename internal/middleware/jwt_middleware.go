@@ -41,8 +41,16 @@ func JWTAuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		claims := token.Claims.(jwt.MapClaims)
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token claims",
+			})
+			return
+		}
+
 		c.Set("user_id", claims["sub"])
+		c.Set("role", claims["role"])
 
 		c.Next()
 	}

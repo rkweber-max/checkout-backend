@@ -21,6 +21,7 @@ type CreateUserRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
+	Role     string `json:"role,omitempty"`
 }
 
 func (h *UserHandler) Create(c *gin.Context) {
@@ -33,10 +34,23 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
+	role := domain.RoleCustomer
+	if req.Role != "" {
+		role = domain.Role(req.Role)
+
+		if role != domain.RoleAdmin && role != domain.RoleCustomer && role != domain.RoleEmployee {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid role. Must be 'admin', 'employee', or 'customer'",
+			})
+			return
+		}
+	}
+
 	user := &domain.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: req.Password,
+		Role:     role,
 	}
 
 	err := h.service.Create(user)

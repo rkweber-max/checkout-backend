@@ -155,7 +155,7 @@ func (s *userService) Login(email, password string) (string, error) {
 	}
 
 	log.Printf("Generating token for user ID: %d", user.ID)
-	token, err := auth.GenerateToken(user.ID, s.config.JWTSecret)
+	token, err := auth.GenerateToken(user.ID, s.config.JWTSecret, user.Role)
 	if err != nil {
 		log.Printf("Error generating token: %v", err)
 		return "", err

@@ -58,25 +58,51 @@ func registerRoutes(
 
 	api := router.Group("/api")
 	{
+		// Public routes
 		api.POST("/login", authHandler.Login)
-		api.POST("/users", userHandler.Create)
 
+		// Authenticated routes
 		authenticated := api.Group("/")
 		authenticated.Use(middleware.JWTAuthMiddleware(config))
 
-		authenticated.GET("/users", userHandler.List)
-		authenticated.GET("/users/:id", userHandler.GetByID)
-		authenticated.GET("/users/email/:email", userHandler.GetByEmail)
-		authenticated.PUT("/users/:id", userHandler.Update)
-		authenticated.DELETE("/users/:id", userHandler.Delete)
+		// Admin routes
+		admin := authenticated.Group("/admin")
+		admin.Use(middleware.AuthorizationRole("admin"))
+		{
+			admin.POST("/users", userHandler.Create)
+			admin.GET("/users", userHandler.List)
+			admin.GET("/users/:id", userHandler.GetByID)
+			admin.GET("/users/email/:email", userHandler.GetByEmail)
+			admin.PUT("/users/:id", userHandler.Update)
+			admin.DELETE("/users/:id", userHandler.Delete)
+		}
 
-		authenticated.POST("/products", productHandler.CreateProduct)
-		authenticated.GET("/products", productHandler.GetAllProducts)
-		authenticated.GET("/products/:id", productHandler.GetProductByID)
-		authenticated.PUT("/products/:id", productHandler.UpdateProduct)
-		authenticated.DELETE("/products/:id", productHandler.DeleteProduct)
+		// Customer routes
+		customer := authenticated.Group("/customer")
+		customer.Use(middleware.AuthorizationRole("customer"))
+		{
+			customer.POST("/products", productHandler.CreateProduct)
+			customer.GET("/products", productHandler.GetAllProducts)
+			customer.GET("/products/:id", productHandler.GetProductByID)
+			customer.PUT("/products/:id", productHandler.UpdateProduct)
+			customer.DELETE("/products/:id", productHandler.DeleteProduct)
 
-		authenticated.POST("/checkout", checkoutHandler.Checkout)
+			customer.POST("/checkout", checkoutHandler.Checkout)
+		}
+
+		// Employees routes
+		employee := authenticated.Group("/employee")
+		employee.Use(middleware.AuthorizationRole("employee"))
+		{
+			employee.POST("/checkout", checkoutHandler.Checkout)
+		}
+
+		// Shared routes
+		sharedCheckout := authenticated.Group("/checkout")
+		sharedCheckout.Use(middleware.AuthorizationRole("customer", "employee"))
+		{
+			sharedCheckout.POST("/", checkoutHandler.Checkout)
+		}
 	}
 
 	log.Printf("🚀 Server running on port %s", config.AppPort)
